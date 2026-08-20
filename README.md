@@ -19,6 +19,7 @@ delete User B's Todos, even by guessing/changing an id in the API URL.
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Setup](#setup)
+- [Running with Docker](#running-with-docker)
 - [Environment Variables](#environment-variables)
 - [Auth0 Configuration](#auth0-configuration)
 - [Database & Migrations](#database--migrations)
@@ -71,6 +72,7 @@ verified token.
 │   ├── todos/              # Todo model, serializer, viewset, permissions, tests
 │   ├── manage.py
 │   ├── requirements.txt
+│   ├── Dockerfile
 │   └── .env.example
 ├── frontend/
 │   ├── app/
@@ -82,7 +84,9 @@ verified token.
 │   ├── hooks/useTodos.ts   # data fetching + mutations + loading/error state
 │   ├── lib/api.ts          # centralized fetch client (auth header, error mapping)
 │   ├── types/todo.ts
+│   ├── Dockerfile
 │   └── .env.example
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -116,6 +120,28 @@ npm run dev                      # http://localhost:3000
 ```
 
 Visit `http://localhost:3000` - it redirects to `/login`.
+
+## Running with Docker
+
+Alternative to the manual setup above. Requires Docker Desktop.
+
+```bash
+cp backend/.env.example backend/.env             # fill in AUTH0_DOMAIN / AUTH0_AUDIENCE
+cp frontend/.env.example frontend/.env.local     # fill in the NEXT_PUBLIC_AUTH0_* values
+
+docker compose up --build
+```
+
+This builds and runs both services: Django on `http://localhost:8000`
+(migrations applied automatically on start) and Next.js on
+`http://localhost:3000`. Both source trees are bind-mounted into their
+containers, so code edits on the host are picked up live, same as running
+them natively. Uses the default SQLite database inside `backend/` unless
+`DATABASE_URL` is set in `backend/.env`.
+
+```bash
+docker compose down          # stop and remove containers
+```
 
 ## Environment Variables
 
@@ -293,6 +319,9 @@ the other's todos - including by hand-editing the `:id` in the URL.
 - **Pagination, search, and status filtering are implemented** (bonus
   requirements) since they were cheap given the viewset/queryset structure
   already in place for isolation.
-- **No Docker / public deployment** included, to keep scope inside the
-  assignment's 4-6 hour target; see [Setup](#setup) for the two-process
-  local run instead.
+- **Docker Compose is included** (`docker-compose.yml`, dev-mode
+  Dockerfiles with bind mounts) as a convenience for reviewers - it isn't
+  the primary documented workflow, since the native setup in
+  [Setup](#setup) needs no Docker at all.
+- **No public deployment** included, to keep scope inside the assignment's
+  4-6 hour target.
